@@ -35,6 +35,22 @@ pytest -q
 | Método | Ruta      | Descripción              |
 |--------|-----------|--------------------------|
 | GET    | `/health` | Estado de la app y la BD |
+| POST   | `/blacklists` | Agrega un email a la lista negra global (Bearer token) |
+
+### POST `/blacklists`
+```json
+{ "email": "user@example.com", "app_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "blocked_reason": "spam" }
+```
+- `email` y `app_uuid` (UUID) son obligatorios; `blocked_reason` es opcional (máx. 255).
+- Se guardan además la IP de origen y la fecha/hora (UTC) de la solicitud.
+- Respuestas: `201` creado · `400` datos inválidos · `401` sin token / token inválido · `409` el email ya existe.
+
+Generar un token para un sistema cliente (firmado con `JWT_SECRET_KEY`, sin expiración):
+```bash
+flask create-token <nombre-sistema>
+curl -X POST localhost:5000/blacklists -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" -d '{"email":"user@example.com","app_uuid":"3fa85f64-5717-4562-b3fc-2c963f66afa6"}'
+```
 
 ## Despliegue en AWS Elastic Beanstalk
 Plataforma: **Python 3.12 en Amazon Linux 2023**. EB instala `requirements.txt` y arranca el `Procfile`
