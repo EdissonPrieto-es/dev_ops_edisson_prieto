@@ -36,6 +36,10 @@ pytest -q
 |--------|-----------|--------------------------|
 | GET    | `/health` | Estado de la app y la BD |
 | POST   | `/blacklists` | Agrega un email a la lista negra global (Bearer token) |
+| GET    | `/blacklists/<email>` | Indica si un email está en la lista negra y el motivo (Bearer token) |
+
+Autorización: token estático `Authorization: Bearer <API_TOKEN>`, definido por la variable de entorno
+`API_TOKEN` (en local por defecto `dev-static-token`). Sin token o con uno distinto la API responde `401`.
 
 ### POST `/blacklists`
 ```json
@@ -45,12 +49,16 @@ pytest -q
 - Se guardan además la IP de origen y la fecha/hora (UTC) de la solicitud.
 - Respuestas: `201` creado · `400` datos inválidos · `401` sin token / token inválido · `409` el email ya existe.
 
-Generar un token para un sistema cliente (firmado con `JWT_SECRET_KEY`, sin expiración):
 ```bash
-flask create-token <nombre-sistema>
-curl -X POST localhost:5000/blacklists -H "Authorization: Bearer <token>" \
+curl -X POST localhost:5000/blacklists -H "Authorization: Bearer dev-static-token" \
   -H "Content-Type: application/json" -d '{"email":"user@example.com","app_uuid":"3fa85f64-5717-4562-b3fc-2c963f66afa6"}'
 ```
+
+### GET `/blacklists/<email>`
+```bash
+curl localhost:5000/blacklists/user@example.com -H "Authorization: Bearer dev-static-token"
+```
+Responde `200` con `blacklisted: false` y `blocked_reason: null` si el email no está en la lista.
 
 ## Despliegue en AWS Elastic Beanstalk
 Plataforma: **Python 3.12 en Amazon Linux 2023**. EB instala `requirements.txt` y arranca el `Procfile`
@@ -60,7 +68,7 @@ Plataforma: **Python 3.12 en Amazon Linux 2023**. EB instala `requirements.txt` 
 pip install awsebcli
 eb init -p "python-3.12" dev-ops-app --region us-east-1
 eb create dev-ops-env --database.engine postgres   # o sin --database y usar DATABASE_URL
-eb setenv SECRET_KEY=<valor> JWT_SECRET_KEY=<valor-de-32+-caracteres>
+eb setenv SECRET_KEY=<valor> JWT_SECRET_KEY=<valor-de-32+-caracteres> API_TOKEN=<token-estatico>
 eb deploy        # sube el último commit (git), no los cambios sin commitear
 eb open          # abrir /health
 ```

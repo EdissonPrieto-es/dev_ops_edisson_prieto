@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from flask_jwt_extended import create_access_token
 
 from app.extensions import db
 from app.models import BlacklistEntry
@@ -10,10 +9,8 @@ APP_UUID = str(uuid.uuid4())
 
 
 @pytest.fixture
-def auth(client):
-    with client.application.app_context():
-        token = create_access_token(identity="test-app")
-    return {"Authorization": f"Bearer {token}"}
+def auth():
+    return {"Authorization": "Bearer test-static-token"}
 
 
 def post(client, payload, headers=None, **kwargs):
@@ -85,4 +82,29 @@ def test_requires_token(client):
 
 def test_rejects_invalid_token(client):
     resp = post(client, {"email": "a@example.com", "app_uuid": APP_UUID}, {"Authorization": "Bearer nope"})
-    assert resp.status_code in (401, 422)
+    assert resp.status_code == 401
+
+
+def test_get_blacklisted_email(client, auth):
+    post(client, {"email": "a@example.com", "app_uuid": APP_UUID, "blocked_reason": "spam"}, auth)
+    resp = client.get("/blacklists/A@Example.com", headers=auth)
+    assert resp.status_code == 200
+    assert resp.get_json() == {"blacklisted": True, "blocked_reason": "spam"}
+
+
+def test_get_blacklisted_email_without_reason(client, auth):
+    post(client, {"email": "a@example.com", "app_uuid": APP_UUID}, auth)
+    resp = client.get("/blacklists/a@example.com", headers=auth)
+    assert resp.get_json() == {"blacklisted": True, "blocked_reason": None}
+
+
+def test_get_email_not_blacklisted(client, auth):
+    resp = client.get("/blacklists/nobody@example.com", headers=auth)
+    assert resp.status_code == 200
+    assert resp.get_json() == {"blacklisted": False, "blocked_reason": None}
+
+
+@pytest.mark.parametrize("headers", [None, {"Authorization": "Bearer nope"}, {"Authorization": "test-static-token"}])
+def test_get_requires_token(client, headers):
+    resp = client.get("/blacklists/a@example.com", headers=headers)
+    assert resp.status_code == 401
