@@ -16,7 +16,10 @@ def create_app(config_class=Config):
     ma.init_app(app)
     jwt.init_app(app)
 
+    from .docs import docs_bp
     from .resources import register_resources
+
+    app.register_blueprint(docs_bp)
 
     api = Api(app)
     register_resources(api)

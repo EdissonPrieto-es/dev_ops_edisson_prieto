@@ -14,6 +14,7 @@ app/
   models/          # modelos SQLAlchemy
   schemas/         # esquemas Marshmallow
   resources/       # recursos Flask-RESTful (endpoints)
+  static/openapi.json  # spec OpenAPI 3, servido en /docs con Swagger UI
 tests/             # pytest (SQLite en memoria)
 wsgi.py            # punto de entrada (gunicorn wsgi:app)
 Procfile           # comando web (gunicorn en :8000)
@@ -37,6 +38,9 @@ pytest -q
 | GET    | `/health` | Estado de la app y la BD |
 | POST   | `/blacklists` | Agrega un email a la lista negra global (Bearer token) |
 | GET    | `/blacklists/<email>` | Indica si un email está en la lista negra y el motivo (Bearer token) |
+
+Documentación interactiva (Swagger UI) en **`/docs`**; el spec OpenAPI 3 está en `/static/openapi.json`
+(`app/static/openapi.json`). Usa el botón **Authorize** con el valor de `API_TOKEN` para probar los endpoints.
 
 Autorización: token estático `Authorization: Bearer <API_TOKEN>`, definido por la variable de entorno
 `API_TOKEN` (en local por defecto `dev-static-token`). Sin token o con uno distinto la API responde `401`.

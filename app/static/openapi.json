@@ -1,0 +1,114 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Lista negra global de emails",
+    "version": "1.0.0",
+    "description": "Microservicio para que los sistemas internos consulten y agreguen emails a la lista negra global de la organización."
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token estático definido por la variable de entorno API_TOKEN."
+      }
+    },
+    "schemas": {
+      "BlacklistCreate": {
+        "type": "object",
+        "required": ["email", "app_uuid"],
+        "properties": {
+          "email": {"type": "string", "format": "email", "example": "user@example.com"},
+          "app_uuid": {"type": "string", "format": "uuid", "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"},
+          "blocked_reason": {"type": "string", "maxLength": 255, "nullable": true, "example": "spam"}
+        }
+      },
+      "BlacklistStatus": {
+        "type": "object",
+        "properties": {
+          "blacklisted": {"type": "boolean", "example": true},
+          "blocked_reason": {"type": "string", "nullable": true, "example": "spam"}
+        }
+      },
+      "Message": {
+        "type": "object",
+        "properties": {"message": {"type": "string"}}
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {"type": "string", "example": "Datos inválidos"},
+          "errors": {
+            "type": "object",
+            "additionalProperties": {"type": "array", "items": {"type": "string"}},
+            "example": {"app_uuid": ["Not a valid UUID."]}
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Token ausente o inválido",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Message"},
+          "example": {"message": "Token de autorización inválido o ausente"}}}
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Estado de la aplicación y la base de datos",
+        "tags": ["health"],
+        "responses": {
+          "200": {"description": "App y BD disponibles",
+            "content": {"application/json": {"example": {"status": "ok", "database": "ok"}}}},
+          "503": {"description": "BD no disponible",
+            "content": {"application/json": {"example": {"status": "degraded", "database": "unreachable"}}}}
+        }
+      }
+    },
+    "/blacklists": {
+      "post": {
+        "summary": "Agrega un email a la lista negra global",
+        "description": "Guarda además la IP de origen y la fecha/hora (UTC) de la solicitud.",
+        "tags": ["blacklists"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BlacklistCreate"}}}
+        },
+        "responses": {
+          "201": {"description": "Email agregado",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Message"},
+              "example": {"message": "El email user@example.com fue agregado a la lista negra global"}}}},
+          "400": {"description": "Datos inválidos",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidationError"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "409": {"description": "El email ya está en la lista negra",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Message"},
+              "example": {"message": "El email user@example.com ya está en la lista negra global"}}}}
+        }
+      }
+    },
+    "/blacklists/{email}": {
+      "get": {
+        "summary": "Indica si un email está en la lista negra global y el motivo",
+        "tags": ["blacklists"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "email", "in": "path", "required": true,
+            "schema": {"type": "string", "format": "email"}, "example": "user@example.com"}
+        ],
+        "responses": {
+          "200": {"description": "Resultado de la consulta",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BlacklistStatus"},
+              "examples": {
+                "en_lista": {"value": {"blacklisted": true, "blocked_reason": "spam"}},
+                "no_en_lista": {"value": {"blacklisted": false, "blocked_reason": null}}
+              }}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"}
+        }
+      }
+    }
+  }
+}
