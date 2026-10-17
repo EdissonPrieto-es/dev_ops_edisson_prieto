@@ -2,11 +2,22 @@ import os
 from datetime import timedelta
 
 from dotenv import load_dotenv
+from sqlalchemy.engine import URL
 
 load_dotenv()
 
 
 def _database_url():
+    if not os.getenv("DATABASE_URL") and os.getenv("RDS_HOSTNAME"):
+        return URL.create(
+            "postgresql",
+            username=os.environ["RDS_USERNAME"],
+            password=os.environ["RDS_PASSWORD"],
+            host=os.environ["RDS_HOSTNAME"],
+            port=int(os.getenv("RDS_PORT", "5432")),
+            database=os.environ["RDS_DB_NAME"],
+        ).render_as_string(hide_password=False)
+
     url = os.getenv("DATABASE_URL", "postgresql://app_user:app_password@localhost:5432/app_db")
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
