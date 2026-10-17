@@ -1,1 +1,1 @@
-
+from .blacklist import BlacklistEntry
