@@ -16,6 +16,7 @@ app/
   resources/       # recursos Flask-RESTful (endpoints)
   static/openapi.json  # spec OpenAPI 3, servido en /docs con Swagger UI
 tests/             # pytest (SQLite en memoria)
+postman/           # colección y environments de Postman (escenarios de prueba)
 wsgi.py            # punto de entrada (gunicorn wsgi:app)
 Procfile           # comando web (gunicorn en :8000)
 .ebextensions/     # configuración de Elastic Beanstalk
@@ -63,6 +64,30 @@ curl -X POST localhost:5000/blacklists -H "Authorization: Bearer dev-static-toke
 curl localhost:5000/blacklists/user@example.com -H "Authorization: Bearer dev-static-token"
 ```
 Responde `200` con `blacklisted: false` y `blocked_reason: null` si el email no está en la lista.
+
+## Pruebas con Postman
+`postman/` contiene la colección `blacklist.postman_collection.json` y dos environments:
+`local.postman_environment.json` (`http://localhost:5000`, token `dev-static-token`) y
+`aws.postman_environment.json` (URL de Elastic Beanstalk; el `api_token` va vacío y se completa en Postman,
+nunca en el repo).
+
+La colección tiene 15 escenarios con tests y un ejemplo de respuesta guardado en cada uno:
+- **Health:** `GET /health`.
+- **POST `/blacklists`:** agregar con y sin motivo (`201`), duplicado (`409`), email inválido, `app_uuid`
+  inválido, campos ausentes y motivo de más de 255 caracteres (`400`), sin token y token inválido (`401`).
+- **GET `/blacklists/:email`:** email en la lista con y sin motivo (`true`), email que no está (`false`),
+  sin token y token inválido (`401`).
+
+Córrela completa y en orden: los GET consultan los emails que crean los POST (se generan con un timestamp,
+así que se puede correr varias veces).
+
+```bash
+npx newman run postman/blacklist.postman_collection.json -e postman/local.postman_environment.json
+npx newman run postman/blacklist.postman_collection.json -e postman/aws.postman_environment.json \
+  --env-var api_token=<API_TOKEN>
+```
+
+Documentación publicada en Postman: _pendiente_
 
 ## Despliegue en AWS Elastic Beanstalk
 Plataforma: **Python 3.12 en Amazon Linux 2023**. EB instala `requirements.txt` y arranca el `Procfile`
