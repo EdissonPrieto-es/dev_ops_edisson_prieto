@@ -61,9 +61,9 @@
         "tags": ["health"],
         "responses": {
           "200": {"description": "App y BD disponibles",
-            "content": {"application/json": {"example": {"status": "ok", "database": "ok"}}}},
+            "content": {"application/json": {"example": {"status": "ok", "database": "ok", "version": "v2", "instance": "ip-172-31-10-20"}}}},
           "503": {"description": "BD no disponible",
-            "content": {"application/json": {"example": {"status": "degraded", "database": "unreachable"}}}}
+            "content": {"application/json": {"example": {"status": "degraded", "database": "unreachable", "version": "v2", "instance": "ip-172-31-10-20"}}}}
         }
       }
     },

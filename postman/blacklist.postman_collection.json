@@ -28,7 +28,8 @@
                 "exec": [
                   "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
                   "pm.test(\"Responde JSON\", () => pm.response.to.be.json);",
-                  "pm.test(\"App y BD ok\", () => pm.expect(pm.response.json()).to.eql({status: \"ok\", database: \"ok\"}));"
+                  "pm.test(\"App y BD ok\", () => pm.expect(pm.response.json()).to.include({status: \"ok\", database: \"ok\"}));",
+                  "pm.test(\"Informa versión e instancia\", () => pm.expect(pm.response.json()).to.have.all.keys(\"status\", \"database\", \"version\", \"instance\"));"
                 ]
               }
             }
@@ -78,7 +79,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n    \"status\": \"ok\",\n    \"database\": \"ok\"\n}"
+              "body": "{\n    \"status\": \"ok\",\n    \"database\": \"ok\",\n    \"version\": \"dev\",\n    \"instance\": \"localhost\"\n}"
             }
           ]
         }
