@@ -87,7 +87,7 @@ npx newman run postman/blacklist.postman_collection.json -e postman/aws.postman_
   --env-var api_token=<API_TOKEN>
 ```
 
-Documentación publicada en Postman: _pendiente_
+Documentación publicada en Postman: https://documenter.getpostman.com/view/14888456/2sBYHSxg4g
 
 ## Despliegue en AWS Elastic Beanstalk
 Plataforma: **Python 3.12 en Amazon Linux 2023**. EB instala `requirements.txt` y arranca el `Procfile`
