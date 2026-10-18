@@ -222,3 +222,6 @@ __marimo__/
 # IDE / herramientas locales
 .idea/
 .mcp.json
+
+# Versión del bundle de despliegue (se agrega al zip al empaquetar)
+VERSION

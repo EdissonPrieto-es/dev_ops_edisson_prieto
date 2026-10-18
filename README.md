@@ -36,7 +36,7 @@ pytest -q
 ## Endpoints
 | Método | Ruta      | Descripción              |
 |--------|-----------|--------------------------|
-| GET    | `/health` | Estado de la app y la BD |
+| GET    | `/health` | Estado de la app y la BD, versión desplegada (`VERSION`) e instancia que responde |
 | POST   | `/blacklists` | Agrega un email a la lista negra global (Bearer token) |
 | GET    | `/blacklists/<email>` | Indica si un email está en la lista negra y el motivo (Bearer token) |
 
