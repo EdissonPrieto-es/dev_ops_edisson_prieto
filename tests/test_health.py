@@ -7,7 +7,7 @@ def test_health(client):
     resp = client.get("/health")
     assert resp.status_code == 200
     assert resp.get_json() == {
-        "status": "ok",
+        "status": "healthy",
         "database": "ok",
         "version": "dev",
         "instance": socket.gethostname(),
