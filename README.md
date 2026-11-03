@@ -105,3 +105,7 @@ eb open          # abrir /health
 Base de datos: si usas la RDS acoplada a EB, la app arma la conexión con `RDS_HOSTNAME`, `RDS_PORT`,
 `RDS_DB_NAME`, `RDS_USERNAME` y `RDS_PASSWORD`. Si usas una RDS independiente, define `DATABASE_URL`
 (tiene prioridad). Las URLs `postgres://` se normalizan a `postgresql://`.
+
+## Integración continua (AWS CodeBuild)
+`buildspec.yml` ejecuta los tests y genera el bundle de Elastic Beanstalk en cada build. El rol de CodeBuild
+necesita permisos de S3 sobre el bucket de artefactos y de CloudWatch Logs para publicar los logs.
