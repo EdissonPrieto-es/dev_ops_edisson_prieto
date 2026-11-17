@@ -1,0 +1,38 @@
+{
+  "family": "devops-flask-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {
+    "operatingSystemFamily": "LINUX",
+    "cpuArchitecture": "X86_64"
+  },
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "devops-flask",
+      "image": "<IMAGE1_NAME>",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 8000, "protocol": "tcp" }
+      ],
+      "secrets": [
+        { "name": "SECRET_KEY", "valueFrom": "arn:aws:ssm:us-east-1:<ACCOUNT_ID>:parameter/devops-flask/SECRET_KEY" },
+        { "name": "JWT_SECRET_KEY", "valueFrom": "arn:aws:ssm:us-east-1:<ACCOUNT_ID>:parameter/devops-flask/JWT_SECRET_KEY" },
+        { "name": "API_TOKEN", "valueFrom": "arn:aws:ssm:us-east-1:<ACCOUNT_ID>:parameter/devops-flask/API_TOKEN" },
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:us-east-1:<ACCOUNT_ID>:parameter/devops-flask/DATABASE_URL" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/devops-flask",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}
