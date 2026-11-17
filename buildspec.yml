@@ -1,13 +1,5 @@
 version: 0.2
 
-# AWS CodeBuild: instala dependencias, ejecuta las pruebas unitarias y genera el
-# bundle (zip) que luego se desplegara en Elastic Beanstalk. Solo construye, no despliega.
-# Las pruebas usan SQLite en memoria (TestConfig), no necesitan una base de datos externa.
-
-env:
-  variables:
-    BUNDLE_NAME: dev-ops-app
-
 phases:
   install:
     runtime-versions:
@@ -21,20 +13,21 @@ phases:
       - echo "Ejecutando pruebas unitarias"
       - mkdir -p reports
       - python -m pytest -q --junitxml=reports/pytest.xml
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+      - REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME"
+      - IMAGE_TAG="$(echo "${CODEBUILD_RESOLVED_SOURCE_VERSION:-local}" | cut -c1-7)"
 
   build:
     commands:
-      # Si las pruebas fallan, CodeBuild detiene la fase y no se genera el artefacto.
-      - VERSION="${CODEBUILD_RESOLVED_SOURCE_VERSION:-local}"
-      - VERSION="$(echo "$VERSION" | cut -c1-7)"
-      - echo "Generando bundle $BUNDLE_NAME-$VERSION.zip"
-      - mkdir -p build dist
-      - echo "$VERSION" > VERSION
-      - >
-        zip -r "dist/$BUNDLE_NAME-$VERSION.zip"
-        .ebextensions Procfile requirements.txt wsgi.py app VERSION
-        -x "*/__pycache__/*" "*.pyc"
-      - unzip -l "dist/$BUNDLE_NAME-$VERSION.zip"
+      - echo "Construyendo imagen $REPOSITORY_URI:$IMAGE_TAG"
+      - docker build --build-arg APP_VERSION="$IMAGE_TAG" -t "$REPOSITORY_URI:$IMAGE_TAG" .
+
+  post_build:
+    commands:
+      - docker push "$REPOSITORY_URI:$IMAGE_TAG"
+      - printf '{"ImageURI":"%s"}' "$REPOSITORY_URI:$IMAGE_TAG" > imageDetail.json
+      - sed -i "s/<ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" taskdef.json
+      - cat imageDetail.json
 
 reports:
   pytest:
@@ -44,6 +37,6 @@ reports:
 
 artifacts:
   files:
-    - dist/*.zip
-  discard-paths: yes
-  name: $BUNDLE_NAME-bundle
+    - imageDetail.json
+    - taskdef.json
+    - appspec.yaml
