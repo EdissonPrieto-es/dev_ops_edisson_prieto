@@ -3,7 +3,6 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        # CodeDeploy reemplaza <TASK_DEFINITION> por la nueva revision registrada desde taskdef.json.
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
           ContainerName: "devops-flask"

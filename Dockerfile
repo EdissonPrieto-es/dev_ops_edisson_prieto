@@ -12,7 +12,6 @@ RUN pip install -r requirements.txt
 COPY app ./app
 COPY wsgi.py .
 
-# /health lee este archivo para reportar la version desplegada (tag = SHA corto del commit).
 ARG APP_VERSION=local
 RUN echo "$APP_VERSION" > VERSION
 

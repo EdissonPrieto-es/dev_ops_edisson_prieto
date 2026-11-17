@@ -1,14 +1,5 @@
 version: 0.2
 
-# AWS CodeBuild (etapa Build de CodePipeline):
-#   1. ejecuta las pruebas unitarias (si fallan, se detiene: no se construye ni se publica imagen),
-#   2. construye la imagen del contenedor y la sube a ECR con el SHA corto del commit como tag,
-#   3. entrega a CodeDeploy (ECS blue/green) imageDetail.json, taskdef.json y appspec.yaml.
-# Las pruebas usan SQLite en memoria (TestConfig), no necesitan base de datos externa.
-#
-# Variables de entorno del proyecto CodeBuild (Privileged mode ON para usar Docker):
-#   AWS_ACCOUNT_ID, AWS_DEFAULT_REGION (us-east-1), IMAGE_REPO_NAME (devops-flask-api)
-
 phases:
   install:
     runtime-versions:
