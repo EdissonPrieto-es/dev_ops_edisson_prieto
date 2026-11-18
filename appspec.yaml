@@ -6,5 +6,5 @@ Resources:
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
           ContainerName: "devops-flask"
-          ContainerPort: 8000
+          ContainerPort: 9000
         PlatformVersion: "LATEST"
