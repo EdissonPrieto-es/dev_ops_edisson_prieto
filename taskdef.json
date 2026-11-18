@@ -8,8 +8,8 @@
     "operatingSystemFamily": "LINUX",
     "cpuArchitecture": "X86_64"
   },
-  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/LabRole",
-  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/LabRole",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "devops-flask",
@@ -27,7 +27,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/devops-flask",
+          "awslogs-group": "/ecs/devops-flask-task",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs",
           "awslogs-create-group": "true"
